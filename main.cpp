@@ -5,42 +5,39 @@
 #include <bitset>
 #include <iostream>
 
-const int SIZE = 9;
+//const int SIZE = 9;
+//
+//int main() {
+//
+//    std::array<std::bitset<SIZE>, SIZE> x = {
+//            0b101000101, // Przykładowe dane
+//            0b000101010,
+//            0b111000011,
+//            0b000111000,
+//            0b101010001,
+//            0b000101010,
+//            0b101000011,
+//            0b000111000,
+//            0b101010001
+//    };
+//
+//    std::bitset<SIZE> XOR9 =
+//            ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
+//              (x[1] & x[2]) | (x[1] & x[3]) | (x[1] & x[4]) | (x[1] & x[5]) | (x[1] & x[6]) | (x[1] & x[7]) | (x[1] & x[8]) |
+//              (x[2] & x[3]) | (x[2] & x[4]) | (x[2] & x[5]) | (x[2] & x[6]) | (x[2] & x[7]) | (x[2] & x[8]) |
+//              (x[3] & x[4]) | (x[3] & x[5]) | (x[3] & x[6]) | (x[3] & x[7]) | (x[3] & x[8]) |
+//              (x[4] & x[5]) | (x[4] & x[6]) | (x[4] & x[7]) | (x[4] & x[8]) |
+//              (x[5] & x[6]) | (x[5] & x[7]) | (x[5] & x[8]) |
+//              (x[6] & x[7]) | (x[6] & x[8]) |
+//              (x[7] & x[8]));
 
-int main() {
-    // Przykładowe 9 bitsetów, każdy o długości 9 bitów
+//  XOR9 &= x[0] | x[1] | x[2] | x[3] | x[4] | x[5] | x[6] | x[7] | x[8];
 
-    std::array<std::bitset<SIZE>, SIZE> x = {
-            0b101000101, // Przykładowe dane
-            0b000101010,
-            0b111000011,
-            0b000111000,
-            0b101010001,
-            0b000101010,
-            0b101000011,
-            0b000111000,
-            0b101010001
-    };
-
-    std::bitset<SIZE> XOR9 =
-            ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
-              (x[1] & x[2]) | (x[1] & x[3]) | (x[1] & x[4]) | (x[1] & x[5]) | (x[1] & x[6]) | (x[1] & x[7]) | (x[1] & x[8]) |
-              (x[2] & x[3]) | (x[2] & x[4]) | (x[2] & x[5]) | (x[2] & x[6]) | (x[2] & x[7]) | (x[2] & x[8]) |
-              (x[3] & x[4]) | (x[3] & x[5]) | (x[3] & x[6]) | (x[3] & x[7]) | (x[3] & x[8]) |
-              (x[4] & x[5]) | (x[4] & x[6]) | (x[4] & x[7]) | (x[4] & x[8]) |
-              (x[5] & x[6]) | (x[5] & x[7]) | (x[5] & x[8]) |
-              (x[6] & x[7]) | (x[6] & x[8]) |
-              (x[7] & x[8]));
-
-    std::cout << "Wynik: " << XOR9 << std::endl;
-
-//    if (XOR4 == XORN) {
-//        std::cout << "git";
-//    }
-
-
-    return 0;
-}
+//
+//    std::cout << "Wynik: " << XOR9 << std::endl;
+//
+//    return 0;
+//}
 
 //int main() {
 //    // Przykładowe 9 bitsetów, każdy o długości 9 bitów
@@ -83,7 +80,34 @@ int main() {
 //
 //    return 0;
 //}
-/*int main() {
+int main() {
+    const int SIZE = 9;
+    std::array<std::bitset<SIZE>, SIZE> x = {
+            0b101000001, // Przykładowe dane
+            0b000101010,
+            0b111000111,
+            0b000111000,
+            0b101010001,
+            0b000101010,
+            0b101000011,
+            0b000111000,
+            0b101010001
+    };
+
+    std::bitset<SIZE> XOR9 =
+            ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
+              (x[1] & x[2]) | (x[1] & x[3]) | (x[1] & x[4]) | (x[1] & x[5]) | (x[1] & x[6]) | (x[1] & x[7]) | (x[1] & x[8]) |
+              (x[2] & x[3]) | (x[2] & x[4]) | (x[2] & x[5]) | (x[2] & x[6]) | (x[2] & x[7]) | (x[2] & x[8]) |
+              (x[3] & x[4]) | (x[3] & x[5]) | (x[3] & x[6]) | (x[3] & x[7]) | (x[3] & x[8]) |
+              (x[4] & x[5]) | (x[4] & x[6]) | (x[4] & x[7]) | (x[4] & x[8]) |
+              (x[5] & x[6]) | (x[5] & x[7]) | (x[5] & x[8]) |
+              (x[6] & x[7]) | (x[6] & x[8]) |
+              (x[7] & x[8]));
+
+    XOR9 &= x[0] | x[1] | x[2] | x[3] | x[4] | x[5] | x[6] | x[7] | x[8];
+
+    std::cout << "Wynik: " << XOR9 << std::endl;
+
     auto fileHandler = new FileHandler("inputHard.txt");
     auto sudokuSolver = SudokuSolver();
 
@@ -100,10 +124,9 @@ int main() {
     sudokuSolver.printTable();
     sudokuSolver.printTableWithPossibilities();
     sudokuSolver.markPossibilities();
-    sudokuSolver.markPossibilities();
     std::cout << "\n-------------------------------\n";
     sudokuSolver.printTableWithPossibilities();
 
     delete fileHandler;
     return 0;
-}*/
+}

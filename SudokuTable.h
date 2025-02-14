@@ -9,9 +9,9 @@
 #include "CellGroup.h"
 
 struct SudokuTable {
-    CellGroup rows;
-    CellGroup columns;
-    CellGroup squares;
+    CellGroup rows[9];
+    CellGroup columns[9];
+    CellGroup squares[9];
     Cell table[9][9];
 };
 

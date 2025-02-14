@@ -9,7 +9,9 @@ void SudokuSolver::parseStringToMatrix(const std::string& input) {
     for (size_t i = 0; i < 9; ++i) {
         for (size_t j = 0; j < 9; ++j) {
             if (index < input.size() && isdigit(input[index])) {
-                sudokuTable.table[i][j].number = input[index] - '0';
+                int number = input[index] - '0';
+                sudokuTable.table[i][j].number = number;
+                --numbersCountDown[number - 1];
             } else {
                 sudokuTable.table[i][j].number = 0;
             }
@@ -28,6 +30,11 @@ void SudokuSolver::printTable() {
         }
         std::cout << std::endl;
     }
+
+    for (int i = 0; i < 9; ++i){
+        std::cout << i+1 << ":" << int(numbersCountDown[i]) << " ";
+    }
+    std::cout << std::endl;
 }
 
 void SudokuSolver::printTableWithPossibilities() {
@@ -63,23 +70,47 @@ void SudokuSolver::printTableWithPossibilities() {
 //            std::cout << row.substr(27, 27) << std::endl;
 //            std::cout << row.substr(54, 27) << std::endl;
     }
+    for (int i = 0; i < 9; ++i){
+        std::cout << i+1 << ":" << int(numbersCountDown[i]) << " ";
+    }
+    std::cout << std::endl;
 }
 
 void SudokuSolver::markPossibilities() {
     markPossibleNumbersColumns();
     markPossibleNumbersRows();
     markPossibleNumbersSquares();
+    for (auto row : sudokuTable.rows) {
+        for (int i = 0; i < SIZE; ++i) {
+            std::cout << int(row.cells[i].first) << " " << int(row.cells[i].second) << " | ";
+        }
+        std::cout << std::endl;
+    }
+    for (auto c : sudokuTable.columns) {
+        for (int i = 0; i < SIZE; ++i) {
+            std::cout << int(c.cells[i].first) << " " << int(c.cells[i].second) << " | ";
+        }
+        std::cout << std::endl;
+    }
+    for (auto g : sudokuTable.squares) {
+        for (int i = 0; i < SIZE; ++i) {
+            std::cout << int(g.cells[i].first) << " " << int(g.cells[i].second) << " | ";
+        }
+        std::cout << std::endl;
+    }
+
 }
 void SudokuSolver::markPossibleNumbersColumns(){
-    for (int i = 0; i < 9; ++i){
+    for (int8_t i = 0; i < 9; ++i){
         std::bitset<9> numberIsPossible = ~std::bitset<9>(0); //0b1'1111'1111
         for (int j = 0; j < 9; ++j){
             if (sudokuTable.table[j][i].number != 0) {
                 numberIsPossible[sudokuTable.table[j][i].number - 1] = false;
             }
         }
-        for (int j = 0; j < 9; ++j){
+        for (int8_t j = 0; j < 9; ++j){
             sudokuTable.table[j][i].numberIsPossible &= numberIsPossible;
+            sudokuTable.columns[i].cells[j] = {j, i};
         }
     }
 }
@@ -94,13 +125,16 @@ void SudokuSolver::markPossibleNumbersRows(){
         }
         for (int j = 0; j < 9; ++j){
             sudokuTable.table[i][j].numberIsPossible &= numberIsPossible;
+            sudokuTable.rows[i].cells[j] = {i, j};
         }
     }
 }
 
 void SudokuSolver::markPossibleNumbersSquares(){
+    int counterI = 0;
     for (int i = 0; i < 9; i+=3){
         for (int j = 0; j < 9; j+=3){
+            int counterJ = 0;
             std::bitset<9> numberIsPossible = ~std::bitset<9>(0); //0b1'1111'1111
             for (int ii = 0; ii < 3; ++ii){
                 for (int jj = 0; jj < 3; ++jj){
@@ -112,8 +146,10 @@ void SudokuSolver::markPossibleNumbersSquares(){
             for (int ii = 0; ii < 3; ++ii){
                 for (int jj = 0; jj < 3; ++jj){
                     sudokuTable.table[i+ii][j+jj].numberIsPossible &= numberIsPossible;
+                    sudokuTable.squares[counterI].cells[counterJ++] = {i+ii, j+jj};
                 }
             }
+            ++counterI;
         }
     }
 }
