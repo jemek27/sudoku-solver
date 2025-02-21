@@ -51,6 +51,18 @@ struct SudokuTable {
         }
         return squares;
     }
+
+    Cell getCellFromColumn(std::pair<int8_t, int8_t> id) const {
+        return table[id.first][id.second];
+    }
+
+    Cell getCellFromRow(std::pair<int8_t, int8_t> id) const {
+        return table[id.second][id.first];
+    }
+
+    Cell getCellFromSquare(int8_t squareID, int8_t cellID) const {
+        return table[squares[squareID].cells[cellID].first][squares[squareID].cells[cellID].second];
+    }
 };
 
 #endif //SUDOKU_SOLVER_SUDOKUTABLE_H

@@ -14,6 +14,7 @@ constexpr int8_t SIZE = 9;
 
 class SudokuSolver {
     int8_t numbersCountDown[9] = {9,9,9,9,9,9,9,9,9};
+
     SudokuTable sudokuTable;
 public:
     void parseStringToMatrix(const std::string& input);
@@ -25,6 +26,9 @@ public:
     void markPossibleNumbersColumns();
     void markPossibleNumbersRows();
     void markPossibleNumbersSquares();
+
+    std::bitset<SIZE> checkSingleInstances(std::array<Cell, SIZE> cellGroup);
+    bool tryObviousMoves();
 };
 
 

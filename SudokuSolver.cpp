@@ -153,3 +153,57 @@ void SudokuSolver::markPossibleNumbersSquares(){
         }
     }
 }
+
+// std::bitset<SIZE> SudokuSolver::checkSingleInstances(std::array<Cell, SIZE> cells) {
+//     std::array<std::bitset<SIZE>, SIZE> x = {
+//         cells[0].numberIsPossible, cells[1].numberIsPossible, cells[2].numberIsPossible,
+//         cells[3].numberIsPossible, cells[4].numberIsPossible, cells[5].numberIsPossible,
+//         cells[6].numberIsPossible, cells[7].numberIsPossible, cells[8].numberIsPossible
+//     };
+//
+//     std::bitset<SIZE> XOR9 =
+//             ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
+//               (x[1] & x[2]) | (x[1] & x[3]) | (x[1] & x[4]) | (x[1] & x[5]) | (x[1] & x[6]) | (x[1] & x[7]) | (x[1] & x[8]) |
+//               (x[2] & x[3]) | (x[2] & x[4]) | (x[2] & x[5]) | (x[2] & x[6]) | (x[2] & x[7]) | (x[2] & x[8]) |
+//               (x[3] & x[4]) | (x[3] & x[5]) | (x[3] & x[6]) | (x[3] & x[7]) | (x[3] & x[8]) |
+//               (x[4] & x[5]) | (x[4] & x[6]) | (x[4] & x[7]) | (x[4] & x[8]) |
+//               (x[5] & x[6]) | (x[5] & x[7]) | (x[5] & x[8]) |
+//               (x[6] & x[7]) | (x[6] & x[8]) |
+//               (x[7] & x[8]));
+//
+//     XOR9 &= x[0] | x[1] | x[2] | x[3] | x[4] | x[5] | x[6] | x[7] | x[8];
+//
+//     return XOR9;
+// }
+
+std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cells) {
+    std::array<std::bitset<SIZE>, SIZE> x = {
+        cells[0].numberIsPossible, cells[1].numberIsPossible, cells[2].numberIsPossible,
+        cells[3].numberIsPossible, cells[4].numberIsPossible, cells[5].numberIsPossible,
+        cells[6].numberIsPossible, cells[7].numberIsPossible, cells[8].numberIsPossible
+    };
+
+    std::bitset<SIZE> XOR9 =
+            ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
+              (x[1] & x[2]) | (x[1] & x[3]) | (x[1] & x[4]) | (x[1] & x[5]) | (x[1] & x[6]) | (x[1] & x[7]) | (x[1] & x[8]) |
+              (x[2] & x[3]) | (x[2] & x[4]) | (x[2] & x[5]) | (x[2] & x[6]) | (x[2] & x[7]) | (x[2] & x[8]) |
+              (x[3] & x[4]) | (x[3] & x[5]) | (x[3] & x[6]) | (x[3] & x[7]) | (x[3] & x[8]) |
+              (x[4] & x[5]) | (x[4] & x[6]) | (x[4] & x[7]) | (x[4] & x[8]) |
+              (x[5] & x[6]) | (x[5] & x[7]) | (x[5] & x[8]) |
+              (x[6] & x[7]) | (x[6] & x[8]) |
+              (x[7] & x[8]));
+
+    XOR9 &= x[0] | x[1] | x[2] | x[3] | x[4] | x[5] | x[6] | x[7] | x[8];
+
+    return XOR9;
+}
+
+bool SudokuSolver::tryObviousMoves() {
+    // for (int8_t i = 0; i < 9; ++i) {
+    //     std::array<Cell, SIZE> cells;
+    //     for (int8_t j = 0; j < 9; ++j) {
+    //         cells[j] = sudokuTable.table[i][j];
+    //     }
+    // }
+
+}
