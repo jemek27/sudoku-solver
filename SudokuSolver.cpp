@@ -80,26 +80,8 @@ void SudokuSolver::markPossibilities() {
     markPossibleNumbersColumns();
     markPossibleNumbersRows();
     markPossibleNumbersSquares();
-    for (auto row : sudokuTable.rows) {
-        for (int i = 0; i < SIZE; ++i) {
-            std::cout << int(row.cells[i].first) << " " << int(row.cells[i].second) << " | ";
-        }
-        std::cout << std::endl;
-    }
-    for (auto c : sudokuTable.columns) {
-        for (int i = 0; i < SIZE; ++i) {
-            std::cout << int(c.cells[i].first) << " " << int(c.cells[i].second) << " | ";
-        }
-        std::cout << std::endl;
-    }
-    for (auto g : sudokuTable.squares) {
-        for (int i = 0; i < SIZE; ++i) {
-            std::cout << int(g.cells[i].first) << " " << int(g.cells[i].second) << " | ";
-        }
-        std::cout << std::endl;
-    }
-
 }
+
 void SudokuSolver::markPossibleNumbersColumns(){
     for (int8_t i = 0; i < 9; ++i){
         std::bitset<9> numberIsPossible = ~std::bitset<9>(0); //0b1'1111'1111
@@ -110,7 +92,6 @@ void SudokuSolver::markPossibleNumbersColumns(){
         }
         for (int8_t j = 0; j < 9; ++j){
             sudokuTable.table[j][i].numberIsPossible &= numberIsPossible;
-            sudokuTable.columns[i].cells[j] = {j, i};
         }
     }
 }
@@ -125,7 +106,6 @@ void SudokuSolver::markPossibleNumbersRows(){
         }
         for (int j = 0; j < 9; ++j){
             sudokuTable.table[i][j].numberIsPossible &= numberIsPossible;
-            sudokuTable.rows[i].cells[j] = {i, j};
         }
     }
 }
@@ -146,7 +126,6 @@ void SudokuSolver::markPossibleNumbersSquares(){
             for (int ii = 0; ii < 3; ++ii){
                 for (int jj = 0; jj < 3; ++jj){
                     sudokuTable.table[i+ii][j+jj].numberIsPossible &= numberIsPossible;
-                    sudokuTable.squares[counterI].cells[counterJ++] = {i+ii, j+jj};
                 }
             }
             ++counterI;
@@ -201,10 +180,47 @@ std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cellGroup) {
     return XOR9;
 }
 
-bool SudokuSolver::tryObviousMoves() {
-    for (int8_t i = 0; i < 9; ++i) {
-        std::bitset<SIZE> singles = checkSingleInstances(sudokuTable.columns[i]);
-        //TODO delete form posibilities
-    }
+void SudokuSolver::tryObviousMoves() {
+    bool moveMade = false;
+    do {
+        moveMade |= tryObviousMovesOnGroup(sudokuTable.columns);
+        moveMade |= tryObviousMovesOnGroup(sudokuTable.rows);
+        moveMade |= tryObviousMovesOnGroup(sudokuTable.squares);
+        std::cout << "Obvious moves\n";
+    } while (moveMade);
+}
 
+bool SudokuSolver::tryObviousMovesOnGroup(std::array<CellGroup, 9> & group) {
+    bool moveMade = false;
+    for (int8_t i = 0; i < 9; ++i) {
+        std::bitset<SIZE> singles = checkSingleInstances(group[i]);
+
+        for (int8_t j = 0; j < 9; ++j) {
+            if (singles[j]) {
+                for (int8_t k = 0; k < 9; ++k) {
+                    if (group[i].cells[k]->numberIsPossible.test(j)) {
+                        group[i].cells[k]->number = j+1;
+                        group[i].cells[k]->numberIsPossible = 0;
+                        deletePossibleNumberFromGroups(*group[i].cells[k]);
+                        moveMade = true;
+                        std::cout << group[i].cells[k]->number << " " << group[i].cells[k]->numberIsPossible << " "
+                            << group[i].cells[k]->colID << " " << group[i].cells[k]->rowID <<std::endl;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return moveMade;
+}
+
+void SudokuSolver::deletePossibleNumberFromGroups(Cell cell) {
+    std::bitset<SIZE> terminator = ~std::bitset<SIZE>(0); // 0b111....
+    terminator.reset(cell.number - 1);  // 0b111011...
+
+    for (int8_t i = 0; i < 9; ++i) {
+        sudokuTable.columns[cell.colID].cells[i]->numberIsPossible &= terminator;
+        sudokuTable.rows[cell.rowID].cells[i]->numberIsPossible &= terminator;
+        sudokuTable.squares[cell.squareID].cells[i]->numberIsPossible &= terminator;
+    }
 }

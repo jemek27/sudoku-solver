@@ -28,7 +28,9 @@ public:
     void markPossibleNumbersSquares();
 
     std::bitset<SIZE> checkSingleInstances(CellGroup cellGroup);
-    bool tryObviousMoves();
+    void tryObviousMoves();
+    bool tryObviousMovesOnGroup(std::array<CellGroup, 9> & group);
+    void deletePossibleNumberFromGroups(Cell cell);
 };
 
 

@@ -10,6 +10,9 @@
 #include <bitset>
 
 struct Cell {
+    uint8_t rowID;
+    uint8_t colID;
+    uint8_t squareID;
     uint8_t number = 0;
     //[T, F, T, T...] = 1, 3, 4 are possible
     std::bitset<9> numberIsPossible = ~std::bitset<9>(0); //0b1'1111'1111

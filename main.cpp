@@ -126,6 +126,9 @@ int main() {
     sudokuSolver.markPossibilities();
     std::cout << "\n-------------------------------\n";
     sudokuSolver.printTableWithPossibilities();
+    std::cout << "\nOb moves-------------------------------\n";
+    sudokuSolver.tryObviousMoves();
+    sudokuSolver.printTableWithPossibilities();
 
     delete fileHandler;
     return 0;

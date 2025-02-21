@@ -20,6 +20,7 @@ struct SudokuTable {
         for (uint8_t i = 0; i < 9; ++i) {
             for (uint8_t j = 0; j < 9; ++j) {
                 rows[i].cells[j] = &table[i][j];
+                table[i][j].rowID = i;
             }
         }
         return rows;
@@ -30,6 +31,7 @@ struct SudokuTable {
         for (uint8_t i = 0; i < 9; ++i) {
             for (uint8_t j = 0; j < 9; ++j) {
                 columns[i].cells[j] = &table[j][i];
+                table[i][j].colID = i;
             }
         }
         return columns;
@@ -44,6 +46,7 @@ struct SudokuTable {
                 for (uint8_t ii = 0; ii < 3; ++ii) {
                     for (uint8_t jj = 0; jj < 3; ++jj) {
                         squares[counterI].cells[counterJ++] = &table[i + ii][j + jj];
+                        table[i][j].squareID = counterI;
                     }
                 }
                 ++counterI;
