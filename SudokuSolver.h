@@ -27,7 +27,7 @@ public:
     void markPossibleNumbersRows();
     void markPossibleNumbersSquares();
 
-    std::bitset<SIZE> checkSingleInstances(std::array<Cell, SIZE> cellGroup);
+    std::bitset<SIZE> checkSingleInstances(CellGroup cellGroup);
     bool tryObviousMoves();
 };
 

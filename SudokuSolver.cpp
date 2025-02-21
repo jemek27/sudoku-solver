@@ -176,12 +176,15 @@ void SudokuSolver::markPossibleNumbersSquares(){
 //     return XOR9;
 // }
 
-std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cells) {
+std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cellGroup) {
+
     std::array<std::bitset<SIZE>, SIZE> x = {
-        cells[0].numberIsPossible, cells[1].numberIsPossible, cells[2].numberIsPossible,
-        cells[3].numberIsPossible, cells[4].numberIsPossible, cells[5].numberIsPossible,
-        cells[6].numberIsPossible, cells[7].numberIsPossible, cells[8].numberIsPossible
+        cellGroup.cells[0]->numberIsPossible, cellGroup.cells[1]->numberIsPossible, cellGroup.cells[2]->numberIsPossible,
+        cellGroup.cells[3]->numberIsPossible, cellGroup.cells[4]->numberIsPossible, cellGroup.cells[5]->numberIsPossible,
+        cellGroup.cells[6]->numberIsPossible, cellGroup.cells[7]->numberIsPossible, cellGroup.cells[8]->numberIsPossible
     };
+
+
 
     std::bitset<SIZE> XOR9 =
             ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
@@ -199,11 +202,9 @@ std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cells) {
 }
 
 bool SudokuSolver::tryObviousMoves() {
-    // for (int8_t i = 0; i < 9; ++i) {
-    //     std::array<Cell, SIZE> cells;
-    //     for (int8_t j = 0; j < 9; ++j) {
-    //         cells[j] = sudokuTable.table[i][j];
-    //     }
-    // }
+    for (int8_t i = 0; i < 9; ++i) {
+        std::bitset<SIZE> singles = checkSingleInstances(sudokuTable.columns[i]);
+        //TODO delete form posibilities
+    }
 
 }

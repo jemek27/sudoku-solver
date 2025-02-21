@@ -19,7 +19,7 @@ struct SudokuTable {
         std::array<CellGroup, 9> rows{};
         for (uint8_t i = 0; i < 9; ++i) {
             for (uint8_t j = 0; j < 9; ++j) {
-                rows[i].cells[j] = {i, j};
+                rows[i].cells[j] = &table[i][j];
             }
         }
         return rows;
@@ -29,7 +29,7 @@ struct SudokuTable {
         std::array<CellGroup, 9> columns{};
         for (uint8_t i = 0; i < 9; ++i) {
             for (uint8_t j = 0; j < 9; ++j) {
-                columns[i].cells[j] = {j, i};
+                columns[i].cells[j] = &table[j][i];
             }
         }
         return columns;
@@ -43,25 +43,13 @@ struct SudokuTable {
                 uint8_t counterJ = 0;
                 for (uint8_t ii = 0; ii < 3; ++ii) {
                     for (uint8_t jj = 0; jj < 3; ++jj) {
-                        squares[counterI].cells[counterJ++] = {i + ii, j + jj};
+                        squares[counterI].cells[counterJ++] = &table[i + ii][j + jj];
                     }
                 }
                 ++counterI;
             }
         }
         return squares;
-    }
-
-    Cell getCellFromColumn(std::pair<int8_t, int8_t> id) const {
-        return table[id.first][id.second];
-    }
-
-    Cell getCellFromRow(std::pair<int8_t, int8_t> id) const {
-        return table[id.second][id.first];
-    }
-
-    Cell getCellFromSquare(int8_t squareID, int8_t cellID) const {
-        return table[squares[squareID].cells[cellID].first][squares[squareID].cells[cellID].second];
     }
 };
 
