@@ -28,9 +28,16 @@ public:
     void markPossibleNumbersSquares();
 
     std::bitset<SIZE> checkSingleInstances(CellGroup cellGroup);
+    bool trySinglePossibilities(CellGroup & cellGroup);
+    bool searchRelationshipsBetweenPairs(CellGroup & cellGroup);
+
+    bool searchForRelationships();
     void tryObviousMoves();
     bool tryObviousMovesOnGroup(std::array<CellGroup, 9> & group);
+    void insertValue(Cell * cell, int8_t number);
     void deletePossibleNumberFromGroups(Cell cell);
+
+    void test();
 };
 
 

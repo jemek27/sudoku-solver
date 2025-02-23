@@ -108,7 +108,7 @@ int main() {
 
     std::cout << "Wynik: " << XOR9 << std::endl;
 
-    auto fileHandler = new FileHandler("inputHard.txt");
+    auto fileHandler = new FileHandler("inputNaj.txt"); //inputHard.txt inputNaj.txt
     auto sudokuSolver = SudokuSolver();
 
     std::cout << "Hello, World!" << std::endl;
@@ -121,14 +121,20 @@ int main() {
     std::cout << input << std::endl;
 
     sudokuSolver.parseStringToMatrix(input);
+    sudokuSolver.test();
     sudokuSolver.printTable();
     sudokuSolver.printTableWithPossibilities();
     sudokuSolver.markPossibilities();
     std::cout << "\n-------------------------------\n";
+    sudokuSolver.printTable();
     sudokuSolver.printTableWithPossibilities();
-    std::cout << "\nOb moves-------------------------------\n";
-    sudokuSolver.tryObviousMoves();
-    sudokuSolver.printTableWithPossibilities();
+
+    do {
+        sudokuSolver.tryObviousMoves();
+        sudokuSolver.printTable();
+        sudokuSolver.printTableWithPossibilities();
+        //todo test if finished
+    } while (sudokuSolver.searchForRelationships());
 
     delete fileHandler;
     return 0;

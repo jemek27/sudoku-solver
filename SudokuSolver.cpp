@@ -11,6 +11,7 @@ void SudokuSolver::parseStringToMatrix(const std::string& input) {
             if (index < input.size() && isdigit(input[index])) {
                 int number = input[index] - '0';
                 sudokuTable.table[i][j].number = number;
+                sudokuTable.table[i][j].numberIsPossible = 0;
                 --numbersCountDown[number - 1];
             } else {
                 sudokuTable.table[i][j].number = 0;
@@ -133,28 +134,6 @@ void SudokuSolver::markPossibleNumbersSquares(){
     }
 }
 
-// std::bitset<SIZE> SudokuSolver::checkSingleInstances(std::array<Cell, SIZE> cells) {
-//     std::array<std::bitset<SIZE>, SIZE> x = {
-//         cells[0].numberIsPossible, cells[1].numberIsPossible, cells[2].numberIsPossible,
-//         cells[3].numberIsPossible, cells[4].numberIsPossible, cells[5].numberIsPossible,
-//         cells[6].numberIsPossible, cells[7].numberIsPossible, cells[8].numberIsPossible
-//     };
-//
-//     std::bitset<SIZE> XOR9 =
-//             ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
-//               (x[1] & x[2]) | (x[1] & x[3]) | (x[1] & x[4]) | (x[1] & x[5]) | (x[1] & x[6]) | (x[1] & x[7]) | (x[1] & x[8]) |
-//               (x[2] & x[3]) | (x[2] & x[4]) | (x[2] & x[5]) | (x[2] & x[6]) | (x[2] & x[7]) | (x[2] & x[8]) |
-//               (x[3] & x[4]) | (x[3] & x[5]) | (x[3] & x[6]) | (x[3] & x[7]) | (x[3] & x[8]) |
-//               (x[4] & x[5]) | (x[4] & x[6]) | (x[4] & x[7]) | (x[4] & x[8]) |
-//               (x[5] & x[6]) | (x[5] & x[7]) | (x[5] & x[8]) |
-//               (x[6] & x[7]) | (x[6] & x[8]) |
-//               (x[7] & x[8]));
-//
-//     XOR9 &= x[0] | x[1] | x[2] | x[3] | x[4] | x[5] | x[6] | x[7] | x[8];
-//
-//     return XOR9;
-// }
-
 std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cellGroup) {
 
     std::array<std::bitset<SIZE>, SIZE> x = {
@@ -162,8 +141,6 @@ std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cellGroup) {
         cellGroup.cells[3]->numberIsPossible, cellGroup.cells[4]->numberIsPossible, cellGroup.cells[5]->numberIsPossible,
         cellGroup.cells[6]->numberIsPossible, cellGroup.cells[7]->numberIsPossible, cellGroup.cells[8]->numberIsPossible
     };
-
-
 
     std::bitset<SIZE> XOR9 =
             ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
@@ -181,8 +158,9 @@ std::bitset<SIZE> SudokuSolver::checkSingleInstances(CellGroup cellGroup) {
 }
 
 void SudokuSolver::tryObviousMoves() {
-    bool moveMade = false;
+    bool moveMade;
     do {
+        moveMade = false;
         moveMade |= tryObviousMovesOnGroup(sudokuTable.columns);
         moveMade |= tryObviousMovesOnGroup(sudokuTable.rows);
         moveMade |= tryObviousMovesOnGroup(sudokuTable.squares);
@@ -190,21 +168,19 @@ void SudokuSolver::tryObviousMoves() {
     } while (moveMade);
 }
 
-bool SudokuSolver::tryObviousMovesOnGroup(std::array<CellGroup, 9> & group) {
+bool SudokuSolver::tryObviousMovesOnGroup(std::array<CellGroup, 9> & groups) {
     bool moveMade = false;
     for (int8_t i = 0; i < 9; ++i) {
-        std::bitset<SIZE> singles = checkSingleInstances(group[i]);
+
+        moveMade |= trySinglePossibilities(groups[i]);
+        std::bitset<SIZE> singles = checkSingleInstances(groups[i]);
 
         for (int8_t j = 0; j < 9; ++j) {
             if (singles[j]) {
-                for (int8_t k = 0; k < 9; ++k) {
-                    if (group[i].cells[k]->numberIsPossible.test(j)) {
-                        group[i].cells[k]->number = j+1;
-                        group[i].cells[k]->numberIsPossible = 0;
-                        deletePossibleNumberFromGroups(*group[i].cells[k]);
+                for (auto & cell : groups[i].cells) {
+                    if (cell->numberIsPossible.test(j)) {
+                        insertValue(cell, j+1);
                         moveMade = true;
-                        std::cout << group[i].cells[k]->number << " " << group[i].cells[k]->numberIsPossible << " "
-                            << group[i].cells[k]->colID << " " << group[i].cells[k]->rowID <<std::endl;
                         break;
                     }
                 }
@@ -212,6 +188,31 @@ bool SudokuSolver::tryObviousMovesOnGroup(std::array<CellGroup, 9> & group) {
         }
     }
     return moveMade;
+}
+
+bool SudokuSolver::trySinglePossibilities(CellGroup & cellGroup) {
+    bool moveMade = false;
+    for (auto & cell : cellGroup.cells){
+        if(cell->numberIsPossible.count() == 1) {
+            for (int8_t i = 0; i < SIZE; ++i) {
+                if(cell->numberIsPossible.test(i)) {
+                    insertValue(cell, i + 1);
+                    moveMade = true;
+                    break;
+                }
+            }
+        }
+    }
+    return moveMade;
+}
+
+void SudokuSolver::insertValue(Cell *cell, int8_t number) {
+    cell->number = number;
+    cell->numberIsPossible = 0;
+    --numbersCountDown[number - 1];
+    deletePossibleNumberFromGroups(*cell);
+    std::cout << (int)cell->number << " " << cell->numberIsPossible << " "
+              << (int)cell->colID << " " << (int)cell->rowID << std::endl;
 }
 
 void SudokuSolver::deletePossibleNumberFromGroups(Cell cell) {
@@ -224,3 +225,90 @@ void SudokuSolver::deletePossibleNumberFromGroups(Cell cell) {
         sudokuTable.squares[cell.squareID].cells[i]->numberIsPossible &= terminator;
     }
 }
+
+//todo add triple and more?
+bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup) {
+    bool moveMade = false;
+    std::array<int8_t, SIZE> counters = {};
+    std::cout << (int)counters[0] << std::endl;
+    std::bitset<SIZE> twoOccurrences = std::bitset<SIZE>(0);
+
+    for (int8_t i = 0; i < 9; ++i){
+        for (int8_t j = 0; j < 9; ++j){
+            if (cellGroup.cells[i]->numberIsPossible.test(j)){
+                ++counters[j];
+            }
+        }
+    }
+
+    for (int8_t i = 0; i < 9; ++i){
+        if (counters[i] == 2) {
+            twoOccurrences.set(i);
+        }
+    }
+    for (int8_t i = 0; i < 9; ++i){
+        std::cout << (int)counters[i] << " ";
+    }
+    std::cout << " " << twoOccurrences << std::endl;
+
+    std::array<std::bitset<SIZE>, SIZE> tempPossibilities = {};
+    for (int8_t i = 0; i < 9; ++i){
+        std::bitset<SIZE> tempPossibility = cellGroup.cells[i]->numberIsPossible & twoOccurrences;
+        if ((tempPossibility).count() > 1) {
+            tempPossibilities[i] = tempPossibility;
+        }
+    }
+
+    for (int8_t i = 0; i < 9; ++i){
+        if (tempPossibilities[i] != 0) {
+            for (int8_t j = i + 1; j < 9; ++j){
+                if (tempPossibilities[j] != 0 and
+                    (cellGroup.cells[i]->numberIsPossible.count() > 2 or
+                    cellGroup.cells[j]->numberIsPossible.count() > 2) and
+                    tempPossibilities[i] == tempPossibilities[j]){
+                    std::cout   << " pos1: " << cellGroup.cells[i]->numberIsPossible
+                                << " pos2: " << cellGroup.cells[j]->numberIsPossible << std::endl;
+
+                    cellGroup.cells[i]->numberIsPossible = tempPossibilities[i];
+                    cellGroup.cells[j]->numberIsPossible = tempPossibilities[i];
+                    moveMade = true;
+
+                    std::cout << " 1c: " <<  (int)cellGroup.cells[i]->colID << " 1r: " <<  (int)cellGroup.cells[i]->rowID
+                              << " 2c: " <<  (int)cellGroup.cells[j]->colID << " 2r: " <<  (int)cellGroup.cells[j]->rowID
+                              << " pos: " << cellGroup.cells[i]->numberIsPossible << std::endl;
+                }
+            }
+        }
+    }
+
+    return moveMade;
+}
+
+bool SudokuSolver::searchForRelationships() {
+    bool moveMade = false;
+
+    for (auto & group : sudokuTable.columns) {
+        moveMade |= searchRelationshipsBetweenPairs(group);
+    }
+    for (auto & group : sudokuTable.rows) {
+        moveMade |= searchRelationshipsBetweenPairs(group);
+    }
+    for (auto & group : sudokuTable.squares) {
+        moveMade |= searchRelationshipsBetweenPairs(group);
+    }
+
+    return moveMade;
+}
+
+void SudokuSolver::test() {
+    for (int8_t i = 0; i < 9; ++i) {
+        for (int8_t j = 0; j < 9; ++j) {
+            std::cout   << "r: " << (int)sudokuTable.table[i][j].rowID << "c: " <<  (int)sudokuTable.table[i][j].colID << "s: "
+                        << (int)sudokuTable.table[i][j].squareID << std::endl;
+        }
+    }
+}
+
+
+
+
