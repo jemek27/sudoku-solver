@@ -8,12 +8,13 @@
 #include <iostream>
 #include <array>
 #include <cstdint>
+#include <vector>
 #include "SudokuTable.h"
 
 constexpr int8_t SIZE = 9;
 
 class SudokuSolver {
-    int8_t numbersCountDown[9] = {9,9,9,9,9,9,9,9,9};
+    int8_t numbersCountDown[SIZE] = {9,9,9,9,9,9,9,9,9};
 
     SudokuTable sudokuTable;
 public:
@@ -23,21 +24,29 @@ public:
     void printTableWithPossibilities();
 
     void markPossibilities();
-    void markPossibleNumbersColumns();
-    void markPossibleNumbersRows();
-    void markPossibleNumbersSquares();
-
-    std::bitset<SIZE> checkSingleInstances(CellGroup cellGroup);
-    bool trySinglePossibilities(CellGroup & cellGroup);
-    bool searchRelationshipsBetweenPairs(CellGroup & cellGroup);
+    void markPossibleNumbersInGroups(std::array<CellGroup, 9> & groups);
 
     bool searchForRelationships();
     void tryObviousMoves();
+    void backtrackSolving();
+
+    std::bitset<SIZE> checkSingleInstances(CellGroup cellGroup);
+    bool trySinglePossibilities(CellGroup & cellGroup);
     bool tryObviousMovesOnGroup(std::array<CellGroup, 9> & group);
+    bool searchRelationshipsBetweenPairs(CellGroup & cellGroup);
+
+    Cell* findCellWithLowestPossibilities();
+    bool cellWithoutPossibilitiesExists();
+    bool allCellsAreFilled();
+
+
     void insertValue(Cell * cell, int8_t number);
     void deletePossibleNumberFromGroups(Cell cell);
+    bool correctSudoku();
+    bool correctGrupeType(std::array<CellGroup, 9> & groups);
 
-    void test();
+
+    void testGrupIds();
 };
 
 

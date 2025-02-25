@@ -9,7 +9,7 @@
 #include <cstdint>
 
 struct CellGroup {
-    bool validGroup = false;
+    int8_t cellsLeft = 9;
     Cell* cells[9] = {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr};
 };
 
