@@ -5,112 +5,146 @@
 #include <bitset>
 #include <iostream>
 
-//const int SIZE = 9;
-//
-//int main() {
-//
-//    std::array<std::bitset<SIZE>, SIZE> x = {
-//            0b101000101, // Przykładowe dane
-//            0b000101010,
-//            0b111000011,
-//            0b000111000,
-//            0b101010001,
-//            0b000101010,
-//            0b101000011,
-//            0b000111000,
-//            0b101010001
-//    };
-//
-//    std::bitset<SIZE> XOR9 =
-//            ~((x[0] & x[1]) | (x[0] & x[2]) | (x[0] & x[3]) | (x[0] & x[4]) | (x[0] & x[5]) | (x[0] & x[6]) | (x[0] & x[7]) | (x[0] & x[8]) |
-//              (x[1] & x[2]) | (x[1] & x[3]) | (x[1] & x[4]) | (x[1] & x[5]) | (x[1] & x[6]) | (x[1] & x[7]) | (x[1] & x[8]) |
-//              (x[2] & x[3]) | (x[2] & x[4]) | (x[2] & x[5]) | (x[2] & x[6]) | (x[2] & x[7]) | (x[2] & x[8]) |
-//              (x[3] & x[4]) | (x[3] & x[5]) | (x[3] & x[6]) | (x[3] & x[7]) | (x[3] & x[8]) |
-//              (x[4] & x[5]) | (x[4] & x[6]) | (x[4] & x[7]) | (x[4] & x[8]) |
-//              (x[5] & x[6]) | (x[5] & x[7]) | (x[5] & x[8]) |
-//              (x[6] & x[7]) | (x[6] & x[8]) |
-//              (x[7] & x[8]));
-
-//  XOR9 &= x[0] | x[1] | x[2] | x[3] | x[4] | x[5] | x[6] | x[7] | x[8];
-
-//
-//    std::cout << "Wynik: " << XOR9 << std::endl;
-//
-//    return 0;
-//}
-
-//int main() {
-//    // Przykładowe 9 bitsetów, każdy o długości 9 bitów
-//    std::array<std::bitset<SIZE>, SIZE> rows = {
-//            0b101000101, // Przykładowe dane
-//            0b000101010,
-//            0b111000011,
-//            0b000111000,
-//            0b101010001,
-//            0b000101010,
-//            0b101000011,
-//            0b000111000,
-//            0b101010001
-//    };
-//
-//    // Sprawdzenie, czy istnieje kolumna z dokładnie jedną jedynką
-//    bool has_single_one = false;
-//
-//    for (int col = 0; col < SIZE; ++col) {
-//        std::bitset<SIZE> column_mask(1 << col); // Maska dla kolumny
-//        std::bitset<SIZE> column_bits; // Zbiorczy bitset dla kolumny
-//
-//        // Zbieranie jedynek w kolumnie
-//        for (int row = 0; row < SIZE; ++row) {
-//            if ((rows[row] & column_mask).any()) {
-//                column_bits.set(row); // Ustawienie bitu w zbiorczym bitsetcie
-//            }
-//        }
-//
-//        // Sprawdzenie, czy w kolumnie jest dokładnie jedna jedynka
-//        if (column_bits.count() == 1) {
-//            has_single_one = true;
-//            std::cout << "Kolumna " << col << " ma dokładnie jedną jedynkę.\n";
-//        }
-//    }
-//
-//    if (!has_single_one) {
-//        std::cout << "Żadna kolumna nie ma dokładnie jednej jedynki.\n";
-//    }
-//
-//    return 0;
-//}
 int main() {
-    auto fileHandler = new FileHandler("inputNaj2.txt"); //inputHard.txt inputNaj.txt
-    auto sudokuSolver = SudokuSolver();
+    auto fileHandler = new FileHandler("sudoku.csv"); //inputHard.txt inputNaj.txt sudoku.csv
+    std::vector<std::pair<std::size_t ,SudokuSolver>> backtrackErrorData;
+    std::vector<std::pair<std::size_t ,SudokuSolver>> errorData;
 
-    std::string input {};
-    if (!fileHandler->readFromFile(input)) {
+    std::vector<std::vector<std::string>> input {};
+    if (!fileHandler->readCSV(input, 100'000)) {
         std::cout << "No input data!" << std::endl;
         return 0;
     }
-    std::cout << input << std::endl;
+    std::cout << "input finished" << std::endl;
 
-    sudokuSolver.parseStringToMatrix(input);
-    sudokuSolver.printTableWithPossibilities();
-    sudokuSolver.markPossibilities();
-    std::cout << "\n-------------------------------\n";
 
-    do {
-        sudokuSolver.printTableWithPossibilities();
-        sudokuSolver.tryObviousMoves();
-        sudokuSolver.printTableWithPossibilities();
-        //todo test if finished
-    } while (sudokuSolver.searchForRelationships());
+    std::size_t segment = input.size() / 1000;
+    std::size_t segmentStart = 0;
+    std::size_t segmentEnd = 0;
 
-    sudokuSolver.backtrackSolving();
+    for (int promil = 0; promil < 1000; ++promil) {
+        segmentStart = promil == 0 ? 1 : segment * promil; // id 0 has col names
+        segmentEnd = promil == 999 ? input.size() : segment * (promil + 1);
 
-    if (sudokuSolver.correctSudoku()) {
-        std::cout << "~~~~WIN~~~~" << std::endl;
-    } else {
-        std::cout << "~~~~LOSE~~~~" << std::endl;
+        for (std::size_t i = segmentStart; i < segmentEnd; ++i) {
+            auto sudokuSolver = SudokuSolver();
+
+            sudokuSolver.parseDigitOneLineStringToMatrix(input[i][0]);
+//        sudokuSolver.printTableWithPossibilities();
+            sudokuSolver.markPossibilities();
+            do {
+//            sudokuSolver.printTableWithPossibilities();
+                sudokuSolver.tryObviousMoves();
+//            sudokuSolver.printTableWithPossibilities();
+            } while (sudokuSolver.searchForRelationships());
+
+//            std::cout << "backtrack" << std::endl;
+            if (!sudokuSolver.backtrackSolving()) {
+                std::cout << i << " backtrack error" << std::endl;
+                backtrackErrorData.push_back({i, sudokuSolver});
+            } else {
+                if (sudokuSolver.correctSudoku(input[i][1])) {
+                    //::cout << "~~~~WIN~~~~" << i << std::endl;
+                } else if (sudokuSolver.correctSudoku()) { //double check maybe provided solution is incorrect
+                    //std::cout << "~~~~WIN~~~~" << i << std::endl;
+                    sudokuSolver.printTableWithPossibilities();
+                    errorData.push_back({i, sudokuSolver});
+                } else {
+                    //std::cout << "~~~~LOSE~~~~"<< i << std::endl;
+                    sudokuSolver.printTableWithPossibilities();
+                    errorData.push_back({i, sudokuSolver});
+                }
+            }
+        }
+        std::cout << "BE: " << backtrackErrorData.size()  << std::endl;
+        std::cout << "E: " << errorData.size() << std::endl;
+        std::cout << "ALL: " << backtrackErrorData.size() + errorData.size() << std::endl;
     }
+
+//    for (auto & data : backtrackErrorData) {
+//        std::cout << "BE: " << data.first << "\n";
+//        std::cout << "BE: " << input[data.first][0] << "\n";
+//        std::cout << "BE: " << input[data.first][1] << "\n";
+//        data.second.printTableWithPossibilities();
+//    }
+//
+//    for (auto & data : errorData) {
+//        std::cout << "E: " << data.first << "\n";
+//        std::cout << "E: " << input[data.first][0] << "\n";
+//        std::cout << "E: " << input[data.first][1] << "\n";
+//        data.second.printTableWithPossibilities();
+//    }
+
+    std::string printBuffer = {};
+
+    for (auto & data : backtrackErrorData) {
+        printBuffer += "BE: " + std::to_string(data.first)  + "\n";
+        printBuffer += "BE: " + input[data.first][0] + "\n";
+        printBuffer += "BE: " + input[data.first][1] + "\n";
+        printBuffer += "BE: " + data.second.getTableString() + "\n";
+    }
+
+    for (auto & data : errorData) {
+        printBuffer += "E: " + std::to_string(data.first)  + "\n";
+        printBuffer += "E: " + input[data.first][0] + "\n";
+        printBuffer += "E: " + input[data.first][1] + "\n";
+        printBuffer += "E: " + data.second.getTableString() + "\n";
+    }
+
+    std::cout << printBuffer << std::endl;
+    std::cout << "BE: " << backtrackErrorData.size()  << std::endl;
+    std::cout << "E: " << errorData.size() << std::endl;
+    std::cout << "ALL: " << backtrackErrorData.size() + errorData.size() << std::endl;
+
+    std::string fileBuffer = {};
+    fileBuffer += input[0][0] + ',' + input[0][1] + '\n';
+
+    for (auto & data : backtrackErrorData) {
+        fileBuffer += input[data.first][0] + ',' + input[data.first][1] + '\n';
+    }
+    for (auto & data : errorData) {
+        fileBuffer += input[data.first][0] + ',' + input[data.first][1] + '\n';
+    }
+
+    fileHandler->setFilePath("errorData.csv");
+    fileHandler->writeToFile(fileBuffer);
 
     delete fileHandler;
     return 0;
 }
+
+//
+//int main() {
+//    auto fileHandler = new FileHandler("inputNaj.txt"); //inputHard.txt inputNaj.txt
+//    auto sudokuSolver = SudokuSolver();
+//
+//    std::string input {};
+//    if (!fileHandler->readFromFile(input)) {
+//        std::cout << "No input data!" << std::endl;
+//        return 0;
+//    }
+//    std::cout << input << std::endl;
+//
+//    sudokuSolver.parseStringToMatrix(input);
+//    sudokuSolver.printTableWithPossibilities();
+//    sudokuSolver.markPossibilities();
+//    std::cout << "\n-------------------------------\n";
+//
+//    do {
+//        sudokuSolver.printTableWithPossibilities();
+//        sudokuSolver.tryObviousMoves();
+//        sudokuSolver.printTableWithPossibilities();
+//        //todo test if finished
+//    } while (sudokuSolver.searchForRelationships());
+//
+//    sudokuSolver.backtrackSolving();
+//
+//    if (sudokuSolver.correctSudoku()) {
+//        std::cout << "~~~~WIN~~~~" << std::endl;
+//    } else {
+//        std::cout << "~~~~LOSE~~~~" << std::endl;
+//    }
+//
+//    delete fileHandler;
+//    return 0;
+//}

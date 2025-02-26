@@ -4,7 +4,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
+#include <vector>
+
 
 class FileHandler {
     std::string filePath;
@@ -17,6 +20,7 @@ public:
     bool writeToFile(const std::string& content);
     bool appendToFile(const std::string& content);
     bool readFromFile(std::string& content);
+    bool readCSV(std::vector<std::vector<std::string>>& content, std::size_t numberOfRows = 0xffffffff);
 };
 
 

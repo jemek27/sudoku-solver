@@ -44,3 +44,29 @@ bool FileHandler::readFromFile(std::string& content) {
     inFile.close();
     return true;
 }
+
+bool FileHandler::readCSV(std::vector<std::vector<std::string>>& content, std::size_t numberOfRows) {
+    std::ifstream inFile(filePath);
+    if (!inFile) {
+        std::cerr << "Nie można otworzyć pliku do odczytu: " << filePath << std::endl;
+        return false;
+    }
+    int c = 0;
+    std::string line;
+    while (std::getline(inFile, line)) {
+        std::vector<std::string> row;
+        std::istringstream lineStream(line);
+        std::string cell;
+
+        // Podział linii według separatora ','
+        while (std::getline(lineStream, cell, ',')) {
+            row.push_back(cell);
+        }
+
+        content.push_back(row);
+        if (c++ == numberOfRows){ break; }
+    }
+
+    inFile.close();
+    return true;
+}

@@ -19,21 +19,25 @@ class SudokuSolver {
     SudokuTable sudokuTable;
 public:
     void parseStringToMatrix(const std::string& input);
+    void parseDigitOneLineStringToMatrix(const std::string& input);
 
     void printTable();
     void printTableWithPossibilities();
+
+    std::string getTableString();
 
     void markPossibilities();
     void markPossibleNumbersInGroups(std::array<CellGroup, 9> & groups);
 
     bool searchForRelationships();
     void tryObviousMoves();
-    void backtrackSolving();
+    bool backtrackSolving();
 
     std::bitset<SIZE> checkSingleInstances(CellGroup cellGroup);
     bool trySinglePossibilities(CellGroup & cellGroup);
     bool tryObviousMovesOnGroup(std::array<CellGroup, 9> & group);
     bool searchRelationshipsBetweenPairs(CellGroup & cellGroup);
+    //todo add Naked Pairs i Naked Triples?
 
     Cell* findCellWithLowestPossibilities();
     bool cellWithoutPossibilitiesExists();
@@ -43,10 +47,12 @@ public:
     void insertValue(Cell * cell, int8_t number);
     void deletePossibleNumberFromGroups(Cell cell);
     bool correctSudoku();
-    bool correctGrupeType(std::array<CellGroup, 9> & groups);
+    bool correctSudoku(std::string& correctNumbers);
+    bool correctGroupType(std::array<CellGroup, 9> & groups);
 
 
-    void testGrupIds();
+
+    void testGroupIds();
 };
 
 
