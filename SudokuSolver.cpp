@@ -49,7 +49,7 @@ void SudokuSolver::printTable() {
     }
 
     for (int i = 0; i < 9; ++i){
-        std::cout << i+1 << ":" << int(numbersCountDown[i]) << " ";
+        std::cout << i+1 << ":" << int(sudokuTable.numbersCountDown[i]) << " ";
     }
     std::cout << std::endl;
 }
@@ -85,7 +85,7 @@ void SudokuSolver::printTableWithPossibilities() {
         std::cout << "---+---+---+---+---+---+---+---+---\n";
     }
     for (int i = 0; i < 9; ++i){
-        std::cout << i+1 << ":" << int(numbersCountDown[i]) << " ";
+        std::cout << i+1 << ":" << int(sudokuTable.numbersCountDown[i]) << " ";
     }
     std::cout << std::endl;
 }
@@ -188,7 +188,7 @@ bool SudokuSolver::trySinglePossibilities(CellGroup & cellGroup) {
 void SudokuSolver::insertValue(Cell *cell, int8_t number) {
     cell->number = number;
     cell->numberIsPossible = 0;
-    --numbersCountDown[number - 1];
+    --sudokuTable.numbersCountDown[number - 1];
     --sudokuTable.columns[cell->colID].cellsLeft;
     --sudokuTable.rows[cell->rowID].cellsLeft;
     --sudokuTable.squares[cell->squareID].cellsLeft;
@@ -218,6 +218,7 @@ void SudokuSolver::deletePossibleNumberFromGroups(Cell cell) {
 }
 
 bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup) {
+    if (cellGroup.cellsLeft < 3) { return false; }
     bool moveMade = false;
     std::array<int8_t, SIZE> counters = {};
     std::bitset<SIZE> twoOccurrences = std::bitset<SIZE>(0);
@@ -235,10 +236,6 @@ bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup) {
             twoOccurrences.set(i);
         }
     }
-//    for (int8_t i = 0; i < 9; ++i){
-//        std::cout << (int)counters[i] << " ";
-//    }
-//    std::cout << " " << twoOccurrences << std::endl;
 
     std::array<std::bitset<SIZE>, SIZE> tempPossibilities = {};
     for (int8_t i = 0; i < 9; ++i){
@@ -296,77 +293,33 @@ bool SudokuSolver::searchForRelationships() {
 }
 
 bool SudokuSolver::backtrackSolving() {
-//    printTableWithPossibilities();
-    SudokuTable sudokuTableCopy = sudokuTable;
-    int8_t numbersCountDownCopy[SIZE];
-    for (int8_t i = 0; i < SIZE; ++i) {
-        numbersCountDownCopy[i] = numbersCountDown[i];
-    }
-    int trysCounter = 0;
-    int8_t currPossibleNumber = 0;
-    Cell*  currCell = nullptr;
+    std::stack<SudokuTable> stackSudokuTable;
+    std::stack<std::pair<Cell*, int8_t>> stackCellData;
 
     while (!allCellsAreFilled()) {
-        ++trysCounter;
-
         Cell* cell = findCellWithLowestPossibilities();
 
-        if (cell == nullptr) {
-            return false;
-        }
+        if (cell == nullptr) { return false; }
 
         for (int8_t i = 0; i < SIZE; ++i) {
             if (cell->numberIsPossible.test(i)) {
-                if (currPossibleNumber == 0) {
-                    currPossibleNumber = i+1;
-                    currCell = cell;
-                }
-
+                stackSudokuTable.push(sudokuTable);
+                stackCellData.push({cell,i});
                 insertValue(cell, i+1);
                 deletePossibleNumberFromGroups(*cell);
                 tryObviousMoves();
+                break;
             }
         }
 
-
-        if (cellWithoutPossibilitiesExists()) {
-//            std::cout << "\n~~~~" << ++trysCounter << "~~~~\n";
-//            std::cout << (int)currPossibleNumber << "~~~~\n";
-//            std::cout << (int)currCell->rowID << "~~~~\n";
-//            std::cout << (int)currCell->colID << "~~~~\n";
-//            printTableWithPossibilities();
-
-            if (currPossibleNumber == 0) {
-                return false;
-            }
-
-            sudokuTable = sudokuTableCopy;
-            for (int8_t i = 0; i < SIZE; ++i) {
-                numbersCountDown[i] = numbersCountDownCopy[i];
-            }
-            currCell->numberIsPossible.reset(currPossibleNumber-1);
-
-//            printTableWithPossibilities();
-//            std::cout << currCell->numberIsPossible << "~~~~\n";
-            if (currCell->numberIsPossible.count() == 1) {
-                for (int8_t i = 0; i < SIZE; ++i) {
-                    if (currCell->numberIsPossible.test(i)) {
-                        insertValue(currCell, i+1);
-                        deletePossibleNumberFromGroups(*currCell);
-                        tryObviousMoves();
-                    }
-                }
-            }
-
-            currPossibleNumber = 0;
-            currCell = nullptr;
+        while (cellWithoutPossibilitiesExists()) {
+            if (stackSudokuTable.empty()) { return false; }// Brak rozwiązania
+            sudokuTable = stackSudokuTable.top(); stackSudokuTable.pop();
+            std::pair<Cell*, int8_t> cellData = stackCellData.top(); stackCellData.pop();
+            cell = cellData.first;
+            cell->numberIsPossible.reset(cellData.second);
         }
-
-        if (trysCounter > 10000) { return false; }
-//        std::cout << "\n~~~~" << ++trysCounter << "~~~~\n";
-//        printTableWithPossibilities();
     }
-
     return true;
 }
 

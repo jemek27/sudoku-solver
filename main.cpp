@@ -11,20 +11,20 @@ int main() {
     std::vector<std::pair<std::size_t ,SudokuSolver>> errorData;
 
     std::vector<std::vector<std::string>> input {};
-    if (!fileHandler->readCSV(input, 100'000)) {
+    if (!fileHandler->readCSV(input)) {
         std::cout << "No input data!" << std::endl;
         return 0;
     }
     std::cout << "input finished" << std::endl;
 
-
-    std::size_t segment = input.size() / 1000;
+    const int segmentation = 100;
+    std::size_t segment = input.size() / segmentation;
     std::size_t segmentStart = 0;
     std::size_t segmentEnd = 0;
 
-    for (int promil = 0; promil < 1000; ++promil) {
-        segmentStart = promil == 0 ? 1 : segment * promil; // id 0 has col names
-        segmentEnd = promil == 999 ? input.size() : segment * (promil + 1);
+    for (int progress = 0; progress < segmentation; ++progress) {
+        segmentStart = progress == 0 ? 1 : segment * progress; // id 0 has col names
+        segmentEnd = progress == segmentation - 1 ? input.size() : segment * (progress + 1);
 
         for (std::size_t i = segmentStart; i < segmentEnd; ++i) {
             auto sudokuSolver = SudokuSolver();
@@ -56,10 +56,15 @@ int main() {
                 }
             }
         }
-        std::cout << "BE: " << backtrackErrorData.size()  << std::endl;
-        std::cout << "E: " << errorData.size() << std::endl;
-        std::cout << "ALL: " << backtrackErrorData.size() + errorData.size() << std::endl;
+        std::cout << progress << std::endl;
+        if (backtrackErrorData.size() + errorData.size() > 0) {
+            std::cout << "BE: " << backtrackErrorData.size()  << std::endl;
+            std::cout << "E: " << errorData.size() << std::endl;
+            std::cout << "ALL: " << backtrackErrorData.size() + errorData.size() << std::endl;
+        }
     }
+
+    std::cout << "finished solving" << std::endl;
 
 //    for (auto & data : backtrackErrorData) {
 //        std::cout << "BE: " << data.first << "\n";

@@ -9,16 +9,19 @@
 #include "CellGroup.h"
 #include <array>
 
-struct SudokuTable {
-    std::array<std::array<Cell, 9>, 9> table{};
-    std::array<CellGroup, 9> rows = initRows();
-    std::array<CellGroup, 9> columns = initColumns();
-    std::array<CellGroup, 9> squares = initSquares();
+constexpr int8_t SIZE = 9;
 
-    constexpr std::array<CellGroup, 9> initRows() {
-        std::array<CellGroup, 9> rows{};
-        for (uint8_t i = 0; i < 9; ++i) {
-            for (uint8_t j = 0; j < 9; ++j) {
+struct SudokuTable {
+    int8_t numbersCountDown[SIZE] = {9,9,9,9,9,9,9,9,9};
+    std::array<std::array<Cell, SIZE>, SIZE> table{};
+    std::array<CellGroup, SIZE> rows = initRows();
+    std::array<CellGroup, SIZE> columns = initColumns();
+    std::array<CellGroup, SIZE> squares = initSquares();
+
+    constexpr std::array<CellGroup, SIZE> initRows() {
+        std::array<CellGroup, SIZE> rows{};
+        for (uint8_t i = 0; i < SIZE; ++i) {
+            for (uint8_t j = 0; j < SIZE; ++j) {
                 rows[i].cells[j] = &table[i][j];
                 table[i][j].rowID = i;
             }
@@ -26,10 +29,10 @@ struct SudokuTable {
         return rows;
     }
 
-    constexpr std::array<CellGroup, 9> initColumns() {
-        std::array<CellGroup, 9> columns{};
-        for (uint8_t i = 0; i < 9; ++i) {
-            for (uint8_t j = 0; j < 9; ++j) {
+    constexpr std::array<CellGroup, SIZE> initColumns() {
+        std::array<CellGroup, SIZE> columns{};
+        for (uint8_t i = 0; i < SIZE; ++i) {
+            for (uint8_t j = 0; j < SIZE; ++j) {
                 columns[i].cells[j] = &table[j][i];
                 table[j][i].colID = i;
             }
@@ -37,11 +40,11 @@ struct SudokuTable {
         return columns;
     }
 
-    constexpr std::array<CellGroup, 9> initSquares() {
-        std::array<CellGroup, 9> squares{};
+    constexpr std::array<CellGroup, SIZE> initSquares() {
+        std::array<CellGroup, SIZE> squares{};
         uint8_t counterI = 0;
-        for (uint8_t i = 0; i < 9; i += 3) {
-            for (uint8_t j = 0; j < 9; j += 3) {
+        for (uint8_t i = 0; i < SIZE; i += 3) {
+            for (uint8_t j = 0; j < SIZE; j += 3) {
                 uint8_t counterJ = 0;
                 for (uint8_t ii = 0; ii < 3; ++ii) {
                     for (uint8_t jj = 0; jj < 3; ++jj) {

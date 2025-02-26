@@ -9,12 +9,11 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <stack>
 #include "SudokuTable.h"
 
-constexpr int8_t SIZE = 9;
-
 class SudokuSolver {
-    int8_t numbersCountDown[SIZE] = {9,9,9,9,9,9,9,9,9};
+
 
     SudokuTable sudokuTable;
 public:
