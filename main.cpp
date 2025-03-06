@@ -2,5 +2,5 @@
 
 int main() {
     return testOnDataSet(6);
-    return solveSudoku("inputNaj.txt"); //inputHard.txt inputNaj.txt
+    return solveSudoku("inputHard.txt"); //inputHard.txt inputNaj.txt
 }
