@@ -13,9 +13,8 @@
 #include "SudokuTable.h"
 
 class SudokuSolver {
-
-
     SudokuTable sudokuTable;
+    std::string solveHistory;
 public:
     void parseStringToMatrix(const std::string& input);
     void parseDigitOneLineStringToMatrix(const std::string& input);
@@ -23,7 +22,10 @@ public:
     void printTable();
     void printTableWithPossibilities();
 
+    std::string getSolveHistory();
     std::string getTableString();
+    std::string getTableWithPossibilitiesString();
+    std::string possibilitiesToString(std::bitset<9> possibilities);
 
     void markPossibilities();
     void markPossibleNumbersInGroups(std::array<CellGroup, 9> & groups);
@@ -33,9 +35,9 @@ public:
     bool backtrackSolving();
 
     std::bitset<SIZE> checkSingleInstances(CellGroup cellGroup);
-    bool trySinglePossibilities(CellGroup & cellGroup);
-    bool tryObviousMovesOnGroup(std::array<CellGroup, 9> & group);
-    bool searchRelationshipsBetweenPairs(CellGroup & cellGroup);
+    bool trySinglePossibilities(CellGroup & cellGroup, const std::string& groupID);
+    bool tryObviousMovesOnGroup(std::array<CellGroup, 9> & group, const std::string& groupID);
+    bool searchRelationshipsBetweenPairs(CellGroup & cellGroup, const std::string& groupID);
     //todo add Naked Pairs i Naked Triples?
 
     Cell* findCellWithLowestPossibilities();
@@ -43,7 +45,8 @@ public:
     bool allCellsAreFilled();
 
 
-    void insertValue(Cell * cell, int8_t number);
+    void insertValue(Cell *cell, int8_t number);
+    void insertValue(Cell *cell, int8_t number, const std::string& moveID);
     void deletePossibleNumberFromGroups(Cell cell);
     bool correctSudoku();
     bool correctSudoku(std::string& correctNumbers);

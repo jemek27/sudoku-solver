@@ -4,6 +4,38 @@
 
 #include "SudokuSolver.h"
 
+std::string SudokuSolver::getSolveHistory() {
+    return solveHistory;
+}
+
+std::string SudokuSolver::getTableString() {
+    std::string result;
+    for (int i = 0; i < 9; ++i){
+        for (int j = 0; j < 9; ++j){
+            result += std::to_string((int)sudokuTable.table[i][j].number);
+        }
+    }
+    return result;
+}
+
+std::string SudokuSolver::getTableWithPossibilitiesString() {
+    std::string result;
+    int number;
+    for (int i = 0; i < 9; ++i){
+        for (int j = 0; j < 9; ++j){
+            number = (int)sudokuTable.table[i][j].number;
+
+            if (number == 0) {
+                result += possibilitiesToString(sudokuTable.table[i][j].numberIsPossible);
+            } else {
+                result += std::to_string(number);
+            }
+
+        }
+    }
+    return result;
+}
+
 void SudokuSolver::parseStringToMatrix(const std::string& input) {
     if (input.size() < 90) { return; }
 
@@ -94,6 +126,7 @@ void SudokuSolver::markPossibilities() {
     markPossibleNumbersInGroups(sudokuTable.rows);
     markPossibleNumbersInGroups(sudokuTable.columns);
     markPossibleNumbersInGroups(sudokuTable.squares);
+    solveHistory += getTableWithPossibilitiesString() + ' ';
 }
 
 void SudokuSolver::markPossibleNumbersInGroups(std::array<CellGroup, 9> & groups) {
@@ -137,25 +170,26 @@ void SudokuSolver::tryObviousMoves() {
     bool moveMade;
     do {
         moveMade = false;
-        moveMade |= tryObviousMovesOnGroup(sudokuTable.columns);
-        moveMade |= tryObviousMovesOnGroup(sudokuTable.rows);
-        moveMade |= tryObviousMovesOnGroup(sudokuTable.squares);
+        moveMade |= tryObviousMovesOnGroup(sudokuTable.columns, "C");
+        moveMade |= tryObviousMovesOnGroup(sudokuTable.rows, "R");
+        moveMade |= tryObviousMovesOnGroup(sudokuTable.squares, "S");
         //std::cout << "Obvious moves\n";
     } while (moveMade);
 }
 
-bool SudokuSolver::tryObviousMovesOnGroup(std::array<CellGroup, 9> & groups) {
+bool SudokuSolver::tryObviousMovesOnGroup(std::array<CellGroup, 9> & groups, const std::string& groupID) {
     bool moveMade = false;
     for (int8_t i = 0; i < 9; ++i) {
         if (groups[i].cellsLeft != 0) {
-            moveMade |= trySinglePossibilities(groups[i]);
+            moveMade |= trySinglePossibilities(groups[i], groupID);
             std::bitset<SIZE> singles = checkSingleInstances(groups[i]);
 
             for (int8_t j = 0; j < 9; ++j) {
                 if (singles[j]) {
                     for (auto & cell : groups[i].cells) {
                         if (cell->numberIsPossible.test(j)) {
-                            insertValue(cell, j+1);
+
+                            insertValue(cell, j+1, "SI:" + groupID);
                             deletePossibleNumberFromGroups(*cell);
                             moveMade = true;
                             break;
@@ -168,13 +202,13 @@ bool SudokuSolver::tryObviousMovesOnGroup(std::array<CellGroup, 9> & groups) {
     return moveMade;
 }
 
-bool SudokuSolver::trySinglePossibilities(CellGroup & cellGroup) {
+bool SudokuSolver::trySinglePossibilities(CellGroup & cellGroup, const std::string& groupID) {
     bool moveMade = false;
     for (auto & cell : cellGroup.cells){
         if(cell->numberIsPossible.count() == 1) {
             for (int8_t i = 0; i < SIZE; ++i) {
                 if(cell->numberIsPossible.test(i)) {
-                    insertValue(cell, i + 1);
+                    insertValue(cell, i + 1, "SP:" + groupID);
                     deletePossibleNumberFromGroups(*cell);
                     moveMade = true;
                     break;
@@ -192,6 +226,18 @@ void SudokuSolver::insertValue(Cell *cell, int8_t number) {
     --sudokuTable.columns[cell->colID].cellsLeft;
     --sudokuTable.rows[cell->rowID].cellsLeft;
     --sudokuTable.squares[cell->squareID].cellsLeft;
+}
+
+void SudokuSolver::insertValue(Cell *cell, int8_t number, const std::string& moveID) {
+    cell->number = number;
+    cell->numberIsPossible = 0;
+    --sudokuTable.numbersCountDown[number - 1];
+    --sudokuTable.columns[cell->colID].cellsLeft;
+    --sudokuTable.rows[cell->rowID].cellsLeft;
+    --sudokuTable.squares[cell->squareID].cellsLeft;
+    solveHistory += moveID +
+                    '>' + std::to_string((int)cell->number) + '<' +
+                    std::to_string((int)cell->colID) + ':' + std::to_string((int)cell->rowID) + ' ' ;
     //std::cout   << ">" << (int)cell->number << "< c:" << (int)cell->colID << " r:" << (int)cell->rowID << " "
     //            << cell->numberIsPossible << std::endl;
 }
@@ -217,7 +263,7 @@ void SudokuSolver::deletePossibleNumberFromGroups(Cell cell) {
     }
 }
 
-bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup) {
+bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup, const std::string& groupID) {
     if (cellGroup.cellsLeft < 3) { return false; }
     bool moveMade = false;
     std::array<int8_t, SIZE> counters = {};
@@ -251,17 +297,15 @@ bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup) {
                 if (tempPossibilities[j] != 0 and
                     (cellGroup.cells[i]->numberIsPossible.count() > 2 or
                     cellGroup.cells[j]->numberIsPossible.count() > 2) and
-                    tempPossibilities[i] == tempPossibilities[j]){
-                    //std::cout   << " pos1: " << cellGroup.cells[i]->numberIsPossible
-                    //            << " pos2: " << cellGroup.cells[j]->numberIsPossible << std::endl;
+                    tempPossibilities[i] == tempPossibilities[j]) {
 
                     cellGroup.cells[i]->numberIsPossible = tempPossibilities[i];
                     cellGroup.cells[j]->numberIsPossible = tempPossibilities[i];
                     moveMade = true;
-
-                    //std::cout << " 1c: " <<  (int)cellGroup.cells[i]->colID << " 1r: " <<  (int)cellGroup.cells[i]->rowID
-                    //          << " 2c: " <<  (int)cellGroup.cells[j]->colID << " 2r: " <<  (int)cellGroup.cells[j]->rowID
-                    //          << " pos: " << cellGroup.cells[i]->numberIsPossible << std::endl;
+                    solveHistory += "RBP:" + groupID + ' ' +
+                            possibilitiesToString(cellGroup.cells[i]->numberIsPossible) + ' ' +
+                            std::to_string((int)cellGroup.cells[i]->colID) + ':' + std::to_string((int)cellGroup.cells[i]->rowID) + ' ' +
+                            std::to_string((int)cellGroup.cells[j]->colID) + ':' + std::to_string((int)cellGroup.cells[j]->rowID) + ' ';
                 }
             }
         }
@@ -275,17 +319,17 @@ bool SudokuSolver::searchForRelationships() {
 
     for (auto & group : sudokuTable.columns) {
         if (group.cellsLeft != 0) {
-            moveMade |= searchRelationshipsBetweenPairs(group);
+            moveMade |= searchRelationshipsBetweenPairs(group, "C");
         }
     }
     for (auto & group : sudokuTable.rows) {
         if (group.cellsLeft != 0) {
-            moveMade |= searchRelationshipsBetweenPairs(group);
+            moveMade |= searchRelationshipsBetweenPairs(group, "R");
         }
     }
     for (auto & group : sudokuTable.squares) {
         if (group.cellsLeft != 0) {
-            moveMade |= searchRelationshipsBetweenPairs(group);
+            moveMade |= searchRelationshipsBetweenPairs(group, "S");
         }
     }
 
@@ -305,7 +349,7 @@ bool SudokuSolver::backtrackSolving() {
             if (cell->numberIsPossible.test(i)) {
                 stackSudokuTable.push(sudokuTable);
                 stackCellData.push({cell,i});
-                insertValue(cell, i+1);
+                insertValue(cell, i+1, "B:");
                 deletePossibleNumberFromGroups(*cell);
                 tryObviousMoves();
                 break;
@@ -318,6 +362,8 @@ bool SudokuSolver::backtrackSolving() {
             std::pair<Cell*, int8_t> cellData = stackCellData.top(); stackCellData.pop();
             cell = cellData.first;
             cell->numberIsPossible.reset(cellData.second);
+            solveHistory += "Reset:" +  possibilitiesToString(cell->numberIsPossible) + ' ' +
+                                        std::to_string((int)cell->colID) + ':' + std::to_string((int)cell->rowID) + ' ';
         }
     }
     return true;
@@ -402,16 +448,6 @@ bool SudokuSolver::correctGroupType(std::array<CellGroup, 9> & groups) {
     return true;
 }
 
-std::string SudokuSolver::getTableString() {
-    std::string result;
-    for (int i = 0; i < 9; ++i){
-        for (int j = 0; j < 9; ++j){
-            result += std::to_string((int)sudokuTable.table[i][j].number);
-        }
-    }
-    return result;
-}
-
 void SudokuSolver::testGroupIds() {
     for (int8_t i = 0; i < 9; ++i) {
         for (int8_t j = 0; j < 9; ++j) {
@@ -420,3 +456,17 @@ void SudokuSolver::testGroupIds() {
         }
     }
 }
+
+std::string SudokuSolver::possibilitiesToString(std::bitset<9> possibilities) {
+    std::string result;
+    result += '{';
+    for (int i = 0; i < 9; ++i) {
+        if (possibilities[i]) {
+            result += std::to_string(i + 1);
+        }
+    }
+    result += '}';
+    return result;
+}
+
+
