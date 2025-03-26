@@ -12,7 +12,7 @@ Each move is recorded in a structured format, allowing detailed analysis of the 
 - **Advanced Move Detection**: Applies more advanced techniques as searching for relationships between pairs and backtrack solving as a last resort
 - **Input & Output**: Supports two formats for reading and printing Sudoku puzzles.
   - ```
-    parseDigitOneLineStringToMatrix(090038007140570082807146359209800763004090008080002104430905870900780045578401936)`
+    parseDigitOneLineStringToMatrix(090038007140570082807146359209800763004090008080002104430905870900780045578401936)
   - ```
     parseStringToMatrix( ---4---91
                          --7--9-86
