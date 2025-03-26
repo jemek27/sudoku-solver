@@ -302,8 +302,8 @@ bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup, const 
                     cellGroup.cells[i]->numberIsPossible = tempPossibilities[i];
                     cellGroup.cells[j]->numberIsPossible = tempPossibilities[i];
                     moveMade = true;
-                    solveHistory += "RBP:" + groupID + '>' +
-                            possibilitiesToString(cellGroup.cells[i]->numberIsPossible) + '<' +
+                    solveHistory += "RBP:" + groupID +
+                            possibilitiesToString(cellGroup.cells[i]->numberIsPossible)  +
                             std::to_string((int)cellGroup.cells[i]->colID) + ':' + std::to_string((int)cellGroup.cells[i]->rowID) + '&' +
                             std::to_string((int)cellGroup.cells[j]->colID) + ':' + std::to_string((int)cellGroup.cells[j]->rowID) + ' ';
                 }
