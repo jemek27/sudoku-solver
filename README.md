@@ -120,3 +120,6 @@ Where each entry means:
  - Provide a Sudoku puzzle as an input string in a txt file. `solveSudoku("input.txt")`
  - Compile the program using a C++ compiler.
  - Observe the output, including the solved grid and the solving history.
+
+## Possible Future Enhancements
+ - Implement more advanced human-like techniques (e.g., pointing triples, X-wing, Y-wing etc.).
