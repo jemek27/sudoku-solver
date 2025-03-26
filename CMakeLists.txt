@@ -10,4 +10,5 @@ add_executable(sudoku_solver main.cpp
         SudokuSolver.h
         Cell.h
         CellGroup.h
-        SudokuTable.h)
+        SudokuTable.h
+        helpers.cpp)

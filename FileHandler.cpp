@@ -11,7 +11,7 @@ void FileHandler::setFilePath(const std::string& filePath) {
 bool FileHandler::writeToFile(const std::string& content) {
     std::ofstream outFile(filePath, std::ios::out | std::ios::trunc);
     if (!outFile) {
-        std::cerr << "Nie można otworzyć pliku do zapisu: " << filePath << std::endl;
+        std::cerr << "Could not open file for writing: " << filePath << std::endl;
         return false;
     }
     outFile << content;
@@ -22,7 +22,7 @@ bool FileHandler::writeToFile(const std::string& content) {
 bool FileHandler::appendToFile(const std::string& content) {
     std::ofstream outFile(filePath, std::ios::out | std::ios::app);
     if (!outFile) {
-        std::cerr << "Nie można otworzyć pliku do dopisania: " << filePath << std::endl;
+        std::cerr << "Could not open file for appending: " << filePath << std::endl;
         return false;
     }
     outFile << content;
@@ -33,7 +33,7 @@ bool FileHandler::appendToFile(const std::string& content) {
 bool FileHandler::readFromFile(std::string& content) {
     std::ifstream inFile(filePath);
     if (!inFile) {
-        std::cerr << "Nie można otworzyć pliku do odczytu: " << filePath << std::endl;
+        std::cerr << "Could not open file for reading: " << filePath << std::endl;
         return false;
     }
     std::string line;
@@ -48,7 +48,7 @@ bool FileHandler::readFromFile(std::string& content) {
 bool FileHandler::readCSV(std::vector<std::vector<std::string>>& content, std::size_t numberOfRows) {
     std::ifstream inFile(filePath);
     if (!inFile) {
-        std::cerr << "Nie można otworzyć pliku do odczytu: " << filePath << std::endl;
+        std::cerr << "Could not open file for reading: " << filePath << std::endl;
         return false;
     }
     int c = 0;

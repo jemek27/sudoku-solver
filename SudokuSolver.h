@@ -38,7 +38,6 @@ public:
     bool trySinglePossibilities(CellGroup & cellGroup, const std::string& groupID);
     bool tryObviousMovesOnGroup(std::array<CellGroup, 9> & group, const std::string& groupID);
     bool searchRelationshipsBetweenPairs(CellGroup & cellGroup, const std::string& groupID);
-    //todo add Naked Pairs i Naked Triples?
 
     Cell* findCellWithLowestPossibilities();
     bool cellWithoutPossibilitiesExists();

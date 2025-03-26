@@ -41,7 +41,7 @@ int solveSudoku(const std::string& inputPath) {
     return 0;
 }
 
-int testOnDataSet(int numOfThreads) {
+int testOnDataSet(int numOfThreads, bool saveHistory = false) {
     auto fileHandler = new FileHandler("sudoku.csv"); //inputHard.txt inputNaj.txt sudoku.csv
     std::vector<  std::vector< std::pair<std::size_t ,SudokuSolver> >  > backtrackErrorData(numOfThreads);
     std::vector<  std::vector<std::pair<std::size_t ,SudokuSolver> >  >  errorData(numOfThreads);
@@ -131,20 +131,21 @@ int testOnDataSet(int numOfThreads) {
     fileHandler->setFilePath("errorData.csv");
     fileHandler->writeToFile(fileBuffer);
 
+    if (saveHistory) {
+        fileBuffer = {};
+        fileBuffer += input[0][0] + ',' + input[0][1]  + ',' + "solving" + '\n';
 
-    fileBuffer = {};
-    fileBuffer += input[0][0] + ',' + input[0][1]  + ',' + "solving" + '\n';
-
-    int i = 1;
-    for (auto & dataSegment : solveHistory) {
-        for (auto & data : dataSegment) {
-            fileBuffer += input[i][0] + ',' + input[i][1] + ',' + data + ',' + '\n';
-            ++i;
+        int i = 1;
+        for (auto & dataSegment : solveHistory) {
+            for (auto & data : dataSegment) {
+                fileBuffer += input[i][0] + ',' + input[i][1] + ',' + data + ',' + '\n';
+                ++i;
+            }
         }
-    }
 
-    fileHandler->setFilePath("solvedSudoku.csv");
-    fileHandler->writeToFile(fileBuffer);
+        fileHandler->setFilePath("solvedSudoku.csv");
+        fileHandler->writeToFile(fileBuffer);
+    }
 
     delete fileHandler;
     return 0;

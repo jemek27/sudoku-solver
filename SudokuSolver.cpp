@@ -302,9 +302,9 @@ bool SudokuSolver::searchRelationshipsBetweenPairs(CellGroup & cellGroup, const 
                     cellGroup.cells[i]->numberIsPossible = tempPossibilities[i];
                     cellGroup.cells[j]->numberIsPossible = tempPossibilities[i];
                     moveMade = true;
-                    solveHistory += "RBP:" + groupID + ' ' +
-                            possibilitiesToString(cellGroup.cells[i]->numberIsPossible) + ' ' +
-                            std::to_string((int)cellGroup.cells[i]->colID) + ':' + std::to_string((int)cellGroup.cells[i]->rowID) + ' ' +
+                    solveHistory += "RBP:" + groupID + '>' +
+                            possibilitiesToString(cellGroup.cells[i]->numberIsPossible) + '<' +
+                            std::to_string((int)cellGroup.cells[i]->colID) + ':' + std::to_string((int)cellGroup.cells[i]->rowID) + '&' +
                             std::to_string((int)cellGroup.cells[j]->colID) + ':' + std::to_string((int)cellGroup.cells[j]->rowID) + ' ';
                 }
             }
@@ -362,7 +362,7 @@ bool SudokuSolver::backtrackSolving() {
             std::pair<Cell*, int8_t> cellData = stackCellData.top(); stackCellData.pop();
             cell = cellData.first;
             cell->numberIsPossible.reset(cellData.second);
-            solveHistory += "Reset:" +  possibilitiesToString(cell->numberIsPossible) + ' ' +
+            solveHistory += "R:>" + possibilitiesToString(cell->numberIsPossible) + '<' +
                                         std::to_string((int)cell->colID) + ':' + std::to_string((int)cell->rowID) + ' ';
         }
     }
