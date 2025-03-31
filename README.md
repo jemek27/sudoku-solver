@@ -1,4 +1,4 @@
-# Sorting Algorithm Visualizer
+# Sudoku solver
 
 ## Description
 The solver applies logical techniques that a person would use when solving a Sudoku puzzle step by step. 
