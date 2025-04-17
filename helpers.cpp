@@ -41,7 +41,7 @@ int solveSudoku(const std::string& inputPath) {
     return 0;
 }
 
-int testOnDataSet(int numOfThreads, bool saveHistory = false) {
+int testOnDataSet(int numOfThreads, bool saveHistory) {
     auto fileHandler = new FileHandler("sudoku.csv"); //inputHard.txt inputNaj.txt sudoku.csv
     std::vector<  std::vector< std::pair<std::size_t ,SudokuSolver> >  > backtrackErrorData(numOfThreads);
     std::vector<  std::vector<std::pair<std::size_t ,SudokuSolver> >  >  errorData(numOfThreads);
@@ -72,7 +72,9 @@ int testOnDataSet(int numOfThreads, bool saveHistory = false) {
                              std::ref(solveHistory[progress]), std::ref(progressBar[progress]));
     }
 
-    std::thread progressThread(displayProgress, std::ref(progressBar), numOfThreads);
+    std::size_t numberOfIterations = segmentation * numOfThreads;
+
+    std::thread progressThread(displayProgress, std::ref(progressBar), std::ref(numberOfIterations));
 
     for (auto& t : threads) {
         t.join();
@@ -204,10 +206,9 @@ void solve(  std::vector<std::vector<std::string>>::iterator start, std::vector<
     }
 }
 
-void displayProgress(const std::vector<std::atomic<int>>& progressBar, int numThreads) {
+void displayProgress(const std::vector<std::atomic<int>>& progressBar, std::size_t& totalIterations) {
     const int barWidth = 50;
     int lastProgress = -1; // Poprzedni postęp (do optymalizacji wyświetlania)
-    int totalIterations = segmentation * numThreads;
     std::string writeBuffer {};
 
     auto start = steady_clock::now();
@@ -241,7 +242,7 @@ void displayProgress(const std::vector<std::atomic<int>>& progressBar, int numTh
         if (totalProgress >= totalIterations) {
             auto end = steady_clock::now();
             auto duration = duration_cast<milliseconds>(end - start);
-            std::cout << "\nExecution time: " << ConvertMillisecondsToTimeFormat(duration.count()) << " ms" << std::endl;
+            std::cout << "\nExecution time: " << ConvertMillisecondsToTimeFormat(duration.count()) << std::endl;
             break;
         }
 
@@ -258,4 +259,133 @@ std::string ConvertMillisecondsToTimeFormat(long long int milliseconds) {
     char buffer[12];
     snprintf(buffer, sizeof(buffer), "%02d:%02d:%03d", minutes, seconds, remainingMilliseconds);
     return {buffer};
+}
+
+void testInputs() {
+    auto start = steady_clock::now();
+
+    testOnDataSetV2("sudoku.csv", 6);
+    //testOnDataSet(6);
+
+    auto end = steady_clock::now();
+    auto duration = duration_cast<milliseconds>(end - start);
+    std::cout << "\nExecution time: " << ConvertMillisecondsToTimeFormat(duration.count())  << std::endl;
+    return;
+}
+
+int testOnDataSetV2(const std::string& filename, int numOfThreads, bool saveHistory) {
+    auto fileHandler = new FileHandler();
+    std::vector<  std::vector<std::string>  > solveHistory(numOfThreads);
+
+    std::vector<std::atomic<int>> progressBar(numOfThreads);
+    for (auto& p : progressBar) {
+        p.store(0, std::memory_order_relaxed); // Init with 0
+    }
+
+    std::vector<std::shared_ptr<std::vector<std::vector<std::string>>>> inputSegments {};
+    std::vector<std::string> columnNames;
+    bool inputFinished = false;
+
+    auto [estimatedRowCount, numOfColumns] = fileHandler->csvSize(filename);
+
+    std::thread loaderThread(
+            &FileHandler::loadLargeCsvInToQueue,  // wskaźnik do metody
+            fileHandler,                          // wskaźnik na obiekt
+            std::ref(filename),                   // przekazywanie przez referencję (bez kopiowania)
+            numOfThreads,                         // liczba segmentów
+            std::ref(inputFinished),
+            std::ref(estimatedRowCount),
+            numOfColumns,
+            std::ref(columnNames),                // nagłówki kolumn
+            std::ref(inputSegments)               // kontener z segmentami
+    );
+
+    std::vector<std::thread> threads;
+    threads.reserve(numOfThreads);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    for (int progress = 0; progress < numOfThreads; ++progress) {
+        threads.emplace_back(solveV2, inputSegments[progress], std::ref(inputFinished), saveHistory,
+                             std::ref(solveHistory[progress]), std::ref(progressBar[progress]));
+    }
+
+    std::thread progressThread(displayProgress, std::ref(progressBar), std::ref(estimatedRowCount));
+
+    loaderThread.join();
+    std::cout << "Input finished" << std::endl;
+
+
+    for (auto& t : threads) {
+        std::cout << t.get_id() << std::endl;
+        t.join();
+    }
+
+
+    progressThread.join();
+
+    std::cout << "Finished solving" << std::endl;
+
+    if (saveHistory) {
+        for (auto & input : inputSegments) {
+            std::cout << "Saving data" << std::endl;
+            std::string fileBuffer = {};
+            fileBuffer += (*input)[0][0] + ',' + (*input)[0][1]  + ',' + "solving" + '\n';
+
+            int i = 1;
+            for (auto & dataSegment : solveHistory) {
+                for (auto & data : dataSegment) {
+                    fileBuffer += (*input)[i][0] + ',' + (*input)[i][1] + ',' + data + ',' + '\n';
+                    ++i;
+                }
+            }
+
+            fileHandler->setFilePath("solvedSudoku.csv");
+            fileHandler->writeToFile(fileBuffer);
+            std::cout << "segment saved";
+        }
+    }
+
+    delete fileHandler;
+    return 0;
+}
+
+void solveV2(const std::shared_ptr<std::vector<std::vector<std::string>>>& input, bool& inputFinished, bool saveHistory,
+             std::vector<std::string>& solveHistory, std::atomic<int>& progressBar) {
+    std::size_t i = 0;
+    while (!inputFinished or i < input->size()) {
+        if (!inputFinished and input->size() <= i) { // if no data is ready
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        } else {
+            auto sudokuSolver = SudokuSolver();
+
+            sudokuSolver.parseDigitOneLineStringToMatrix((*input)[i][0]);
+            sudokuSolver.markPossibilities();
+            do {
+                sudokuSolver.tryObviousMoves();
+            } while (sudokuSolver.searchForRelationships());
+
+            std::string status;
+
+            if (!sudokuSolver.backtrackSolving()) {
+                status =  "~~ERROR/NO-SOLUTION~~";
+            } else {
+                if (sudokuSolver.correctSudoku((*input)[i][1])) {
+                    status =  "~~WIN~~";
+                } else if (sudokuSolver.correctSudoku()) { //double check maybe provided solution is incorrect
+                    status =  "~~WIN?~~";
+                } else {
+                    status =  "~~LOSE~~";
+                    sudokuSolver.printTableWithPossibilities();
+                }
+            }
+
+            if (saveHistory) {
+                solveHistory.push_back(sudokuSolver.getSolveHistory() + status);
+            }
+            ++i;
+            ++progressBar;
+        }
+    }
+    std::cout << "end";
 }
